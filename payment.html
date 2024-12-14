@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Vehicle Payment Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2.5rem;
+        }
+
+        .search-bar {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-bar input, .search-bar select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus, .search-bar select:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .filter-section {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-section select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .payment-buttons {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-evenly;
+        }
+
+        .payment-buttons button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .payment-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+footer {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+footer .footer-content p {
+    margin: 0;
+}
+
+footer {
+    margin-top: 30px;
+    padding: 10px;
+    background-color: lightblue;
+    text-align: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+      .print-button button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+        .print-button button:hover {
+    background-color: #218838;
+}
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .summary h3 {
+            margin: 0 0 10px;
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Company Vehicle Payment Details</h1>
+
+        <!-- Print Button -->
+ 
+<div class="print-button">
+    <button onclick="printPage()">Print</button>
+</div>
+
+        <!-- Search and Dropdown Section -->
+        <div class="search-bar">
+            <input type="text" id="searchBar" placeholder="Search for vehicles..." oninput="filterTable()">
+            <select id="companyDropdown" onchange="populateVehicleData()">
+                <option value="">Select a Company</option>
+            </select>
+        </div>
+
+        <!-- Filter by Month and Year -->
+        <div class="filter-section">
+            <select id="monthFilter" onchange="populateVehicleData()">
+                <option value="">Select Month</option>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+            <select id="yearFilter" onchange="populateVehicleData()">
+                <option value="">Select Year</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+            </select>
+        </div>
+
+        <!-- Payment Gateway Buttons -->
+        <div class="payment-buttons">
+            <button onclick="makePayment('bkash')">Pay via bKash</button>
+            <button onclick="makePayment('nagad')">Pay via Nagad</button>
+            <button onclick="makePayment('bank')">Pay via Bank</button>
+        </div>
+
+        <!-- Vehicle Data Table -->
+        <table id="vehicleTable">
+            <thead>
+                <tr>
+                    <th>Vehicle Type</th>
+                    <th>Brand</th>
+                    <th>Vehicle Number</th>
+                    <th>Driver Name</th>
+                    <th>Running Days</th>
+                    <th>Rent</th>
+                    <th>Payment Status</th>
+                    <th>Month</th>
+                    <th>Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Vehicle details will be dynamically populated here -->
+            </tbody>
+        </table>
+
+        <!-- Payment Summary -->
+        <div class="summary">
+            <h3>Payment Summary</h3>
+            <p><strong>Total Rent:</strong> <span id="totalRent">0</span> BDT</p>
+            <p><strong>Total Paid:</strong> <span id="totalPaid">0</span> BDT</p>
+            <p><strong>Remaining Due:</strong> <span id="remainingDue">0</span> BDT</p>
+        </div>
+    </div>
+
+    <!-- Footer Section with Copyright -->
+<footer>
+    <div class="footer-content">
+        <p>&copy; 2024 SABBIR RENT-A-CAR. (Developer MD HAMIDUL ISLAM)</p>
+    </div>
+</footer>
+
+    <script>
+        let companies = JSON.parse(localStorage.getItem('companies')) || [];
+        let vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+        let payments = JSON.parse(localStorage.getItem('payments')) || [];
+
+        // Populate Company Dropdown
+        function updateCompanyDropdown() {
+            const dropdown = document.getElementById('companyDropdown');
+            companies.forEach((company, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = company.name;
+                dropdown.appendChild(option);
+            });
+        }
+
+        // Populate Vehicle Data based on selected company, month, and year
+        function populateVehicleData() {
+            const companyIndex = document.getElementById('companyDropdown').value;
+            const monthFilter = document.getElementById('monthFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+            const vehicleTableBody = document.getElementById('vehicleTable').getElementsByTagName('tbody')[0];
+
+            // Clear previous data
+            vehicleTableBody.innerHTML = '';
+
+            if (companyIndex) {
+                const company = companies[companyIndex];
+                const companyVehicles = vehicles.filter(vehicle => vehicle.company === company.name);
+
+                // Filter by month and year
+                const filteredVehicles = companyVehicles.filter(vehicle => {
+                    const payment = payments[company.name]?.[vehicle.vehicleNumber] || {};
+                    return (!monthFilter || payment.month === monthFilter) && (!yearFilter || payment.year === yearFilter);
+                });
+
+                // Populate table with vehicle data
+                let totalRent = 0;
+                filteredVehicles.forEach(vehicle => {
+                    const row = vehicleTableBody.insertRow();
+                    row.insertCell(0).textContent = vehicle.vehicleType;
+                    row.insertCell(1).textContent = vehicle.brand;
+                    row.insertCell(2).textContent = vehicle.vehicleNumber;
+                    row.insertCell(3).textContent = vehicle.driverName;
+                    row.insertCell(4).textContent = vehicle.runningDays;
+                    row.insertCell(5).textContent = vehicle.rent;
+
+                    // Payment Status
+                    const paymentCell = row.insertCell(6);
+                    const payment = payments[company.name]?.[vehicle.vehicleNumber] || {};
+                    paymentCell.textContent = payment.done ? 'Payment Done' : '';
+
+                    // Month and Year
+                    row.insertCell(7).textContent = payment.month || '';
+                    row.insertCell(8).textContent = payment.year || '';
+
+                    totalRent += parseFloat(vehicle.rent);
+                });
+
+                // Update Payment Summary
+                const totalPaid = Object.values(payments[company.name] || {}).reduce((sum, val) => sum + (val.done ? val.amount : 0), 0);
+                document.getElementById('totalRent').textContent = totalRent;
+                document.getElementById('totalPaid').textContent = totalPaid;
+                document.getElementById('remainingDue').textContent = totalRent - totalPaid;
+            }
+        }
+
+        // Filter Table Data
+        function filterTable() {
+            const searchValue = document.getElementById('searchBar').value.toLowerCase();
+            const rows = document.querySelectorAll('#vehicleTable tbody tr');
+
+            rows.forEach(row => {
+                const isVisible = Array.from(row.cells).some(cell => cell.textContent.toLowerCase().includes(searchValue));
+                row.style.display = isVisible ? '' : 'none';
+            });
+        }
+
+        // Payment Gateway Function
+        function makePayment(method) {
+            const companyIndex = document.getElementById('companyDropdown').value;
+            if (!companyIndex) {
+                alert('Please select a company to make payment.');
+                return;
+            }
+
+            const company = companies[companyIndex];
+            const vehicleNumber = prompt(`Enter vehicle number for payment in ${company.name}:`);
+            const vehicle = vehicles.find(v => v.vehicleNumber === vehicleNumber && v.company === company.name);
+
+            if (!vehicle) {
+                alert('Vehicle not found for this company.');
+                return;
+            }
+
+            const amount = parseFloat(prompt(`Enter amount to pay for vehicle ${vehicleNumber}:`));
+
+            if (isNaN(amount) || amount <= 0) {
+                alert('Invalid payment amount.');
+                return;
+            }
+
+            const month = prompt('Enter payment month (MM):');
+            const year = prompt('Enter payment year (YYYY):');
+
+            if (!month || !year) {
+                alert('Month and year are required for payment.');
+                return;
+            }
+
+            payments[company.name] = payments[company.name] || {};
+            payments[company.name][vehicle.vehicleNumber] = { done: true, amount, month, year };
+            localStorage.setItem('payments', JSON.stringify(payments));
+            alert(`Payment of ${amount} BDT for vehicle ${vehicleNumber} via ${method} successful.`);
+
+            // Refresh payment summary
+            populateVehicleData();
+        }
+
+        // Print Page
+        function printPage() {
+            const companyName = document.getElementById('companyDropdown').selectedOptions[0].textContent;
+            if (!companyName) {
+                alert('Please select a company to print details.');
+                return;
+            }
+
+            const printContent = document.querySelector('.container').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            document.body.innerHTML = `<h1>${companyName}</h1>` + printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+        }
+
+        // Initialize Dropdown on Page Load
+        window.onload = updateCompanyDropdown;
+    </script>
+</body>
+</html>

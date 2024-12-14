@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            text-align: center;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Settings</h1>
+        <form id="settings-form">
+            <div class="form-group">
+                <label for="vendor-name">Vendor Name</label>
+                <input type="text" id="vendor-name" placeholder="Enter vendor name">
+            </div>
+            <div class="form-group">
+                <label for="dashboard-title">Dashboard Title</label>
+                <input type="text" id="dashboard-title" placeholder="Enter dashboard title">
+            </div>
+            <button type="submit">Save Settings</button>
+        </form>
+        <p class="message" id="success-message" style="display:none;">Settings updated successfully!</p>
+    </div>
+
+    <script>
+        // Load existing settings
+        document.addEventListener('DOMContentLoaded', () => {
+            const vendorName = localStorage.getItem('vendorName') || 'Sabbir Rent A Car';
+            const dashboardTitle = localStorage.getItem('dashboardTitle') || 'Sabbir Rent A Car Dashboard';
+
+            document.getElementById('vendor-name').value = vendorName;
+            document.getElementById('dashboard-title').value = dashboardTitle;
+        });
+
+        // Save settings to localStorage
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const vendorName = document.getElementById('vendor-name').value;
+            const dashboardTitle = document.getElementById('dashboard-title').value;
+
+            localStorage.setItem('vendorName', vendorName);
+            localStorage.setItem('dashboardTitle', dashboardTitle);
+
+            document.getElementById('success-message').style.display = 'block';
+
+            setTimeout(() => {
+                document.getElementById('success-message').style.display = 'none';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

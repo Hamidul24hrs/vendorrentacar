@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard</title>
+    <style>
+        /* Basic CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        nav, sidebar {
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            margin: 0;
+        }
+        .main-content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+        select, input {
+            margin: 5px 0;
+            padding: 8px;
+            width: 200px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+
+
+<!-- Navbar -->
+<<nav style="background-color: green; padding: 10px;">
+    <h1 style="text-align: center; color: white;">Sabbir Rent A Car Dashboard</h1>
+</nav>
+
+
+<!-- Sidebar -->
+<sidebar>
+    <ul>
+        <li><button onclick="openCompanyDetails()">Company Details</button></li>
+        <li><button onclick="openAddVehicleForm()">Add Vehicle</button></li>
+        <!-- Add this code where you want to embed monthly.html -->
+        <li><button onclick="window.location.href='invoice.html'">Monthly Bill</button></li>
+        <li><button onclick="openReports()">Reports</button></li>
+       
+    </ul>
+</sidebar>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Company Details Section -->
+    <div id="companyDetailsSection">
+        <h2>Company Details</h2>
+        <form id="companyForm">
+            <label for="companyName">Company Name:</label>
+            <input type="text" id="companyName" required>
+            <br>
+            <label for="companyAddress">Company Address:</label>
+            <input type="text" id="companyAddress" required>
+            <br>
+            <label for="binNumber">BIN Number:</label>
+            <input type="text" id="binNumber" required>
+            <br>
+            <label for="invoiceNumber">Invoice Number:</label>
+            <input type="text" id="invoiceNumber" required>
+            <br>
+            <button type="button" onclick="saveCompanyDetails()">Save Company</button>
+        </form>
+
+        <h3>Company List</h3>
+        <table id="companyTable">
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Company Address</th>
+                    <th>BIN Number</th>
+                    <th>Invoice Number</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamically filled with company details -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Vehicle Section -->
+    <div id="addVehicleSection" style="display:none;">
+        <h2>Add Vehicle</h2>
+        <form id="vehicleForm">
+            <label for="companyDropdown">Company:</label>
+            <select id="companyDropdown">
+                <option value="">Select Company</option>
+                <!-- Dynamically filled with company names -->
+            </select>
+            <br>
+            <label for="vehicleType">Vehicle Type:</label>
+            <input type="text" id="vehicleType" required>
+            <br>
+            <label for="brand">Brand:</label>
+            <input type="text" id="brand" required>
+            <br>
+            <label for="vehicleNumber">Vehicle Number:</label>
+            <input type="text" id="vehicleNumber" required>
+            <br>
+            <label for="driverName">Driver Name:</label>
+            <input type="text" id="driverName" required>
+            <br>
+            <label for="runningDays">Running Days:</label>
+            <input type="number" id="runningDays" required>
+            <br>
+            <label for="rent">Rent:</label>
+            <input type="number" id="rent" required>
+            <br>
+            <button type="button" onclick="addVehicle()">Add Vehicle</button>
+        </form>
+
+        <h3>Vehicles List</h3>
+        <table id="vehicleTable">
+            <thead>
+                <tr>
+                    <th>Vehicle Type</th>
+                    <th>Brand</th>
+                    <th>Vehicle Number</th>
+                    <th>Driver Name</th>
+                    <th>Running Days</th>
+                    <th>Rent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamically filled with vehicle details -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Reports Section -->
+    <div id="reportsSection" style="display:none;">
+        <h2>Reports</h2>
+        <label for="companySelect">Select Company:</label>
+        <select id="companySelect" onchange="showVehiclesByCompany()">
+            <option value="">Select a Company</option>
+
+            <!-- Dynamically filled with company names -->
+        </select>
+        <br>
+
+        <div id="vehiclesReport" style="display: none;">
+            <h3>Vehicles Under Selected Company</h3>
+            <table id="vehicleReportTable">
+                <thead>
+                    <tr>
+
+                        <th>Vehicle Type</th>
+                        <th>Brand</th>
+                        <th>Vehicle Number</th>
+                        <th>Driver Name</th>
+                        <th>Running Days</th>
+                        <th>Rent</th>
+                        <th>Invoice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Vehicle rows will be dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+   document.addEventListener('DOMContentLoaded', () => {
+    // Load vendor name and dashboard title from localStorage
+    const vendorName = localStorage.getItem('vendorName') || 'Sabbir Rent A Car';
+    const dashboardTitle = localStorage.getItem('dashboardTitle') || 'Sabbir Rent A Car Dashboard';
+
+    // Update sidebar and header
+    document.querySelector('.sidebar h2').textContent = vendorName;
+    document.querySelector('.dashboard-header h1').textContent = dashboardTitle;
+});
+
+const companies = []; // Array to store company details
+const vehicles = [];  // Array to store vehicle details
+
+// Function to save company details to localStorage
+function saveCompanyDetails() {
+    const companyName = document.getElementById('companyName').value;
+    const companyAddress = document.getElementById('companyAddress').value;
+    const binNumber = document.getElementById('binNumber').value;
+    const invoiceNumber = document.getElementById('invoiceNumber').value;
+
+    if (companyName && companyAddress && binNumber && invoiceNumber) {
+        const company = { name: companyName, address: companyAddress, bin: binNumber, invoice: invoiceNumber };
+        let savedCompanies = JSON.parse(localStorage.getItem('companies')) || [];
+        savedCompanies.push(company);
+        localStorage.setItem('companies', JSON.stringify(savedCompanies));
+
+        alert("Company details saved!");
+
+        // Update company dropdowns in both Add Vehicle and Reports sections
+        loadCompanies(); // reload the companies from localStorage
+        updateCompanyDropdown(); // Update the dropdown menus
+
+        // Add the new company to the table
+        addCompanyToTable(companyName, companyAddress, binNumber, invoiceNumber);
+
+        // Reset form
+        document.getElementById('companyForm').reset();
+    }
+}
+
+// Function to update the company dropdown in the Add Vehicle form and Reports section
+function updateCompanyDropdown() {
+    const dropdown = document.getElementById('companyDropdown');
+    const reportDropdown = document.getElementById('companySelect');
+
+    dropdown.innerHTML = '<option value="">Select Company</option>';
+    reportDropdown.innerHTML = '<option value="">Select Company</option>';
+
+    companies.forEach((company, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = company.name;
+        dropdown.appendChild(option);
+        reportDropdown.appendChild(option.cloneNode(true));
+    });
+}
+
+// Function to save company details to localStorage
+function saveCompanyDetails() {
+    const companyName = document.getElementById('companyName').value;
+    const companyAddress = document.getElementById('companyAddress').value;
+    const binNumber = document.getElementById('binNumber').value;
+    const invoiceNumber = document.getElementById('invoiceNumber').value;
+
+    if (companyName && companyAddress && binNumber && invoiceNumber) {
+        const company = { name: companyName, address: companyAddress, bin: binNumber, invoice: invoiceNumber };
+        let savedCompanies = JSON.parse(localStorage.getItem('companies')) || [];
+        savedCompanies.push(company);
+        localStorage.setItem('companies', JSON.stringify(savedCompanies));
+
+        alert("Company details saved!");
+
+        // Update company dropdowns in both Add Vehicle and Reports sections
+        loadCompanies(); // reload the companies from localStorage
+        updateCompanyDropdown();
+        addCompanyToTable(companyName, companyAddress, binNumber, invoiceNumber);
+
+        // Reset form
+        document.getElementById('companyForm').reset();
+    }
+}
+
+// Function to load companies from localStorage and display in the table
+function loadCompanies() {
+    const savedCompanies = JSON.parse(localStorage.getItem('companies')) || [];
+    companies.length = 0; // Clear current companies array
+    savedCompanies.forEach(company => {
+        companies.push(company); // Populate the companies array
+        addCompanyToTable(company.name, company.address, company.bin, company.invoice);
+    });
+}
+
+// Function to add company to the table
+function addCompanyToTable(companyName, companyAddress, binNumber, invoiceNumber) {
+    const table = document.getElementById('companyTable').getElementsByTagName('tbody')[0];
+    const row = table.insertRow();
+    row.insertCell(0).textContent = companyName;
+    row.insertCell(1).textContent = companyAddress;
+    row.insertCell(2).textContent = binNumber;
+    row.insertCell(3).textContent = invoiceNumber;
+}
+
+// Function to add vehicle details to localStorage
+function addVehicle() {
+    const companyIndex = document.getElementById('companyDropdown').value;
+    const vehicleType = document.getElementById('vehicleType').value;
+    const brand = document.getElementById('brand').value;
+    const vehicleNumber = document.getElementById('vehicleNumber').value;
+    const driverName = document.getElementById('driverName').value;
+    const runningDays = document.getElementById('runningDays').value;
+    const rent = document.getElementById('rent').value;
+
+    if (companyIndex && vehicleType && brand && vehicleNumber && driverName && runningDays && rent) {
+        const vehicle = {
+            company: companies[companyIndex].name,
+            vehicleType,
+            brand,
+            vehicleNumber,
+            driverName,
+            runningDays,
+            rent
+        };
+        let savedVehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+        savedVehicles.push(vehicle);
+        localStorage.setItem('vehicles', JSON.stringify(savedVehicles));
+
+        alert("Vehicle added!");
+
+        // Add vehicle to the table
+        addVehicleToTable(vehicle);
+
+        // Reset form
+        document.getElementById('vehicleForm').reset();
+    }
+}
+
+// Function to add vehicle to the vehicle table
+function addVehicleToTable(vehicle) {
+    const table = document.getElementById('vehicleTable').getElementsByTagName('tbody')[0];
+    const row = table.insertRow();
+    row.insertCell(0).textContent = vehicle.vehicleType;
+    row.insertCell(1).textContent = vehicle.brand;
+    row.insertCell(2).textContent = vehicle.vehicleNumber;
+    row.insertCell(3).textContent = vehicle.driverName;
+    row.insertCell(4).textContent = vehicle.runningDays;
+    row.insertCell(5).textContent = vehicle.rent;
+}
+
+// Function to show vehicles under the selected company in Reports section
+function showVehiclesByCompany() {
+    const companyIndex = document.getElementById('companySelect').value;
+    const vehiclesReportDiv = document.getElementById('vehiclesReport');
+    const vehicleTableBody = document.getElementById('vehicleReportTable').getElementsByTagName('tbody')[0];
+
+    // Clear previous rows
+    vehicleTableBody.innerHTML = '';
+
+    if (companyIndex) {
+        const selectedCompany = companies[companyIndex];
+        vehiclesReportDiv.style.display = 'block'; // Show the report section
+
+        const companyVehicles = vehicles.filter(vehicle => vehicle.company === selectedCompany.name);
+        companyVehicles.forEach(vehicle => {
+            const row = vehicleTableBody.insertRow();
+            row.insertCell(0).textContent = vehicle.vehicleType;
+            row.insertCell(1).textContent = vehicle.brand;
+            row.insertCell(2).textContent = vehicle.vehicleNumber;
+            row.insertCell(3).textContent = vehicle.driverName;
+            row.insertCell(4).textContent = vehicle.runningDays;
+            row.insertCell(5).textContent = vehicle.rent;
+        });
+    } else {
+        vehiclesReportDiv.style.display = 'none';
+    }
+}
+
+// Function to open the Company Details section
+function openCompanyDetails() {
+    document.getElementById('companyDetailsSection').style.display = 'block';
+    document.getElementById('addVehicleSection').style.display = 'none';
+    document.getElementById('reportsSection').style.display = 'none';
+}
+
+// Function to open the Add Vehicle form
+function openAddVehicleForm() {
+    document.getElementById('companyDetailsSection').style.display = 'none';
+    document.getElementById('addVehicleSection').style.display = 'block';
+    document.getElementById('reportsSection').style.display = 'none';
+}
+
+// Function to open the Reports section
+function openReports() {
+    document.getElementById('companyDetailsSection').style.display = 'none';
+    document.getElementById('addVehicleSection').style.display = 'none';
+    document.getElementById('reportsSection').style.display = 'block';
+}
+
+
+// Initialize dropdown on page load
+window.onload = function() {
+    loadCompanies(); // Load companies from localStorage
+    updateCompanyDropdown();
+};
+
+</script>
+
+</body>
+</html>

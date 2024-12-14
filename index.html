@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard with Login/Logout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #2f3b52;
+            padding-top: 20px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            display: block;
+            font-size: 18px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        .sidebar a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Login/Logout buttons on Sidebar */
+        #auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #login-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #logout-btn {
+            background-color: #F44336;
+            color: white;
+        }
+
+        /* Main content area */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* Dashboard header */
+        .dashboard-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        /* Stats Cards */
+        .stats-cards {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 30%;
+            text-align: center;
+        }
+
+        .card h3 {
+            font-size: 36px;
+            margin: 0;
+            color: #4CAF50;
+        }
+
+        .card p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        /* Pie chart container */
+        .chart-container {
+            background-color: whitesmoke;
+            border-radius: 10px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 30%;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-cards {
+                flex-direction: column;
+            }
+
+            .card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div id="auth-buttons">
+            <button id="login-btn" style="display:none;" onclick="login()">Login</button>
+            <button id="logout-btn" style="display:none;" onclick="logout()">Logout</button>
+        </div>
+        <h2>Sabbir Rent A Car</h2>
+        <a href="#" class="active">Dashboard</a>
+        <a href="index.html">Vehicles</a>
+        <a href="dashboard.html">Company Info</a>
+        <a href="invoice.html">Invoices</a>
+        <a href="payment.html">Reports</a>
+        <a href="settings.html">Settings</a>
+     
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>Sabbir Rent A Car Dashboard</h1>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>120</h3>
+                <p>Total Vehicles</p>
+            </div>
+            <div class="card">
+                <h3>50</h3>
+                <p>Active Rentals</p>
+            </div>
+            <div class="card">
+                <h3 id="pending-invoices">25</h3>
+                <p>Pending Invoices</p>
+            </div>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="chart-container">
+            <canvas id="myPieChart" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart.js Script -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+       document.addEventListener('DOMContentLoaded', () => {
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const mainContent = document.querySelector('.main-content');
+
+    // Check if user is logged in
+    const loggedInUser = localStorage.getItem('loggedInUser');
+    if (loggedInUser) {
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+        mainContent.style.display = 'block'; // Show the dashboard
+    } else {
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+        mainContent.style.display = 'none'; // Hide the dashboard
+        alert('Please login to access the dashboard.');
+    }
+});
+
+
+            // Dynamic Data for Pie Chart
+            const rentalData = {
+                active: 50,
+                pending: 20,
+                completed: 30
+            };
+
+            const chartData = [rentalData.active, rentalData.pending, rentalData.completed];
+
+            // Pie Chart Data
+            var ctx = document.getElementById('myPieChart').getContext('2d');
+            var myPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Active Rentals', 'Pending Rentals', 'Completed Rentals'],
+                    datasets: [{
+                        label: 'Rentals Overview',
+                        data: chartData,
+                        backgroundColor: ['#4CAF50', '#FF9800', '#2196F3'],
+                        borderColor: ['#fff', '#fff', '#fff'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            enabled: true,
+                        }
+                    }
+                }
+            });
+
+            // Simulating data for Pending Invoices
+            const invoices = [
+                { number: 'INV-001', company: 'ABC Transport', date: '2024-12-01', amount: 5000, status: 'Pending' },
+                { number: 'INV-002', company: 'XYZ Logistics', date: '2024-12-05', amount: 7500, status: 'Completed' },
+                { number: 'INV-003', company: 'LMN Rentals', date: '2024-12-10', amount: 4500, status: 'Pending' }
+            ];
+
+            localStorage.setItem('invoices', JSON.stringify(invoices));
+
+            const pendingInvoicesCount = invoices.filter(invoice => invoice.status === 'Pending').length;
+            document.getElementById('pending-invoices').textContent = pendingInvoicesCount;
+   
+
+        function login() {
+            localStorage.setItem('loggedInUser', 'user123');
+            alert('Logged in successfully!');
+            location.reload();
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            alert('Logged out successfully!');
+            location.reload();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+    // Load vendor name and dashboard title from localStorage
+    const vendorName = localStorage.getItem('vendorName') || 'Sabbir Rent A Car';
+    const dashboardTitle = localStorage.getItem('dashboardTitle') || 'Sabbir Rent A Car Dashboard';
+
+    // Update sidebar and header
+    document.querySelector('.sidebar h2').textContent = vendorName;
+    document.querySelector('.dashboard-header h1').textContent = dashboardTitle;
+});
+
+    </script>
+</body>
+</html>
