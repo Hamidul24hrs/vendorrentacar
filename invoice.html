@@ -108,6 +108,8 @@
 
         .totals {
             margin-top: 20px;
+             padding: 10px;
+             border: 1px solid #ddd;
             text-align: right;
         }
 
@@ -132,6 +134,75 @@
         .print-button:hover {
             background-color: #218838;
         }
+
+   }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .header-left, .header-right {
+            width: 48%;
+        }
+        .header-left p, .header-right p {
+            margin: 5px 0;
+        }
+
+
+
+    h1 {
+        font-size: 18px; /* Adjusted size for printing */
+    }
+
+    h3 {
+        font-size: 16px; /* Adjusted size for printing */
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+
+    table th, table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        font-size: 12px; /* Smaller text for the table */
+    }
+
+    table th {
+        background-color: #f4f4f4;
+    }
+
+    .footer {
+        text-align: center;
+        font-size: 12px;
+        margin-top: 20px;
+    }
+
+    .footer p {
+        margin: 5px 0;
+    }
+
+    .print-button {
+        display: none; /* Hide print button on print */
+    }
+
+    /* Avoid content spilling to a new page */
+    .full-width-row {
+        text-align: right;
+    }
+
+    .value-cell {
+        text-align: right;
+        font-weight: bold;
+    }
+
+    .no-page-break {
+        page-break-inside: avoid;
+    }
+}
 
         /* Animations */
         @keyframes fadeIn {
@@ -193,6 +264,26 @@
             text-decoration: none;
             cursor: pointer;
         }
+        /* Add this to your CSS for the table */
+/* Update this part of CSS */
+.totals {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end; /* Align it to the right */
+    align-items: center;
+}
+
+.totals table {
+    margin-left: 20px; /* Adds a gap between the two tables */
+    text-align: left;
+}
+
+.totals td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+
     </style>
 </head>
 <body>
@@ -238,7 +329,7 @@
                 <!-- Company Information will be dynamically added here -->
             </div>
 
-            <h2>Vehicle rental bill for the month of October-2024</h2>
+            
             <table id="vehicleInvoiceTable">
                 <thead>
                     <tr>
@@ -262,190 +353,326 @@
         </div>
 
         <script>
-            let companies = JSON.parse(localStorage.getItem('companies')) || [];
-            let vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+  // Get data from localStorage
+let companies = JSON.parse(localStorage.getItem('companies')) || [];
+let vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
 
-            // Update the company dropdown in the invoice page
-            function updateInvoiceDropdown() {
-                const dropdown = document.getElementById('invoiceCompanyDropdown');
-                companies.forEach((company, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = company.name;
-                    dropdown.appendChild(option);
-                });
-            }
+// Update the company dropdown in the invoice page
+function updateCompanyDropdown() {
+    const dropdown = document.getElementById('invoiceCompanyDropdown');
+    dropdown.innerHTML = '<option value="">Select a Company</option>'; // Clear existing options and add placeholder
 
-            // Populate invoice data based on the selected company
-            function populateInvoiceData() {
-                const companyIndex = document.getElementById('invoiceCompanyDropdown').value;
-                const companyDetailsDisplay = document.getElementById('companyDetailsDisplay');
-                const vehicleInvoiceTableBody = document.getElementById('vehicleInvoiceTable').getElementsByTagName('tbody')[0];
+    companies.forEach((company, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = company.name;
+        dropdown.appendChild(option);
+    });
+}
 
-                // Clear previous data
-                companyDetailsDisplay.innerHTML = '';
-                vehicleInvoiceTableBody.innerHTML = '';
+// Populate month and year dropdowns dynamically
+function populateMonthYearDropdowns() {
+    const monthDropdown = document.getElementById('invoiceMonth');
+    const yearDropdown = document.getElementById('invoiceYear');
 
-                if (companyIndex) {
-                    const company = companies[companyIndex];
-                    const companyVehicles = vehicles.filter(vehicle => vehicle.company === company.name);
+    // Populate months
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
 
-                    // Show company details
-                    companyDetailsDisplay.innerHTML = `
-                        <div>
-                            <p><strong>Bill to:</strong> ${company.name}</p>
-                            <p><strong>Address:</strong> ${company.address}</p>
-                        </div>
-                        <div>
-                            <p><strong>BIN Number:</strong> ${company.bin}</p>
-                            <p><strong>Invoice Number:</strong> ${company.invoice}</p>
-                        </div>
-                    `;
+    monthDropdown.innerHTML = ''; // Clear existing options
+    monthNames.forEach((month, index) => {
+        const option = document.createElement('option');
+        option.value = index + 1; // Months are 1-based
+        option.textContent = month;
+        monthDropdown.appendChild(option);
+    });
 
-                    // Show vehicle list
-                    companyVehicles.forEach((vehicle) => {
-                        const row = vehicleInvoiceTableBody.insertRow();
-                        row.insertCell(0).textContent = vehicle.vehicleType;
-                        row.insertCell(1).textContent = vehicle.brand;
-                        row.insertCell(2).textContent = vehicle.vehicleNumber;
-                        row.insertCell(3).textContent = vehicle.driverName;
-                        row.insertCell(4).textContent = vehicle.runningDays;
-                        row.insertCell(5).textContent = vehicle.rent;
-                        const actionCell = row.insertCell(6);
-                        const actionButton = document.createElement('button');
-                        actionButton.textContent = 'Generate Bill';
-                        actionButton.onclick = () => generateBill(company, vehicle);
-                        actionCell.appendChild(actionButton);
-                    });
+    // Populate years (last 5 years to next 5 years)
+    const currentYear = new Date().getFullYear();
+    yearDropdown.innerHTML = ''; // Clear existing options
+    for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        yearDropdown.appendChild(option);
+    }
 
-                    document.getElementById('invoiceDetails').style.display = 'block';
-                } else {
-                    document.getElementById('invoiceDetails').style.display = 'none';
+    // Set default values to current month and year
+    monthDropdown.value = new Date().getMonth() + 1;
+    yearDropdown.value = currentYear;
+}
+
+// Populate invoice data based on the selected company and month
+function populateInvoiceData() {
+    const companyIndex = document.getElementById('invoiceCompanyDropdown').value;
+    const selectedMonth = document.getElementById('invoiceMonth').value; // Get selected month
+    const selectedYear = document.getElementById('invoiceYear').value; // Get selected year
+
+    const companyDetailsDisplay = document.getElementById('companyDetailsDisplay');
+    const vehicleInvoiceTableBody = document.getElementById('vehicleInvoiceTable').getElementsByTagName('tbody')[0];
+
+    // Clear previous data
+    companyDetailsDisplay.innerHTML = '<h2>Vehicle rental bill for the month of </h2>';
+    vehicleInvoiceTableBody.innerHTML = '';
+
+    // Update the month-year header dynamically
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const monthYearHeader = document.querySelector('h2');
+    const selectedMonthName = monthNames[parseInt(selectedMonth) - 1];
+    monthYearHeader.textContent = `Vehicle rental bill for the month of ${selectedMonthName} - ${selectedYear}`;
+
+    if (companyIndex) {
+        const company = companies[companyIndex];
+        const companyVehicles = vehicles.filter(vehicle => vehicle.company === company.name);
+
+        // Show company details
+        companyDetailsDisplay.innerHTML = `
+            <div>
+                <p><strong>Bill to:</strong> ${company.name}</p>
+                <p><strong>Address:</strong> ${company.address}</p>
+            </div>
+            <div>
+                <p><strong>BIN Number:</strong> ${company.bin}</p>
+                <p><strong>Invoice Number:</strong> ${company.invoice}</p>
+            </div>
+        `;
+
+        // Show vehicle list
+        companyVehicles.forEach((vehicle) => {
+            const row = vehicleInvoiceTableBody.insertRow();
+            row.insertCell(0).textContent = vehicle.vehicleType;
+            row.insertCell(1).textContent = vehicle.brand;
+            row.insertCell(2).textContent = vehicle.vehicleNumber;
+            row.insertCell(3).textContent = vehicle.driverName;
+            row.insertCell(4).textContent = vehicle.runningDays;
+            row.insertCell(5).textContent = vehicle.rent;
+            const actionCell = row.insertCell(6);
+            const actionButton = document.createElement('button');
+            actionButton.textContent = 'Generate Bill';
+            actionButton.onclick = () => generateBill(company, vehicle);
+            actionCell.appendChild(actionButton);
+        });
+
+        document.getElementById('invoiceDetails').style.display = 'block';
+    } else {
+        document.getElementById('invoiceDetails').style.display = 'none';
+    }
+}
+
+// Function to generate bill for a specific vehicle
+function generateBill(company, vehicle) {
+    alert(`Generating bill for ${vehicle.vehicleNumber} (${vehicle.vehicleType}) from ${company.name}`);
+}
+
+// Event listeners for dropdown changes
+document.getElementById('invoiceMonth').addEventListener('change', populateInvoiceData);
+document.getElementById('invoiceYear').addEventListener('change', populateInvoiceData);
+document.getElementById('invoiceCompanyDropdown').addEventListener('change', populateInvoiceData);
+
+// Initialize the dropdowns and data on page load
+window.onload = function () {
+    populateMonthYearDropdowns();
+    updateCompanyDropdown();
+};
+
+
+const today = new Date();
+const formattedDate = today.toISOString().split('T')[0]; // ISO format
+
+function generateBill(company, vehicle) {
+    const vehicleRent = parseFloat(vehicle.rent); // Rent per day
+    if (isNaN(vehicleRent)) {
+        alert('Vehicle rent is not a valid number!');
+        return;
+    }
+    
+    const tax = Math.ceil((5 * vehicleRent / 95)); // 5% Tax
+    const txrv = Math.ceil(tax + vehicleRent); // Tax + Rent
+    const vat = Math.ceil((txrv * 15 / 100)); // 15% VAT
+    const totalAmount = Math.ceil(vehicleRent); // Total Amount to be Paid is equal to vehicleRent
+
+    const invoiceDate = document.getElementById('invoiceDate').value || formattedDate; // Use selected date or today's date
+
+    const selectedMonthIndex = parseInt(document.getElementById('invoiceMonth').value) - 1; // Month is 0-indexed
+    const selectedYear = document.getElementById('invoiceYear').value;
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const selectedMonthName = monthNames[selectedMonthIndex];
+
+    const billWindow = window.open("", "_blank");
+    billWindow.document.write(`
+        <html>
+        <head>
+            <title>Invoice</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                    line-height: 1.6;
                 }
-            }
+                h1, h3 {
+                    text-align: center;
+                    color: #333;
+                }
+                .header, .footer {
+                    margin-bottom: 20px;
+                }
+                .header div, .footer div {
+                    padding: 10px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 20px 0;
+                }
+                table th, table td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+                table th {
+                    background-color: #f4f4f4;
+                    color: #333;
+                }
+                .full-width-row {
+                    text-align: right;
+                }
+                .value-cell {
+                    text-align: right;
+                    font-weight: bold;
+                }
+                .footer {
+                    text-align: center;
+                }
+                .print-button {
+                    display: block;
+                    margin: 20px auto;
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 16px;
+                }
+                .print-button:hover {
+                    background-color: #0056b3;
+                }
+            </style>
+        </head>
+        <body>
+            
+            <style>
+    .clearfix::after {
+        content: "";
+        clear: both;
+        display: table;
+    }
+</style>
 
-            const today = new Date();
-            const formattedDate = today.toISOString().split('T')[0]; // ISO format
+<style>
+    .header {
+        margin: 0;
+        padding: 0;
+    }
+    .header div {
+        margin: 0;
+        padding: 0;
+    }
+</style>
 
-            function generateBill(company, vehicle) {
-                const totalRent = vehicle.runningDays * vehicle.rent; // Total Rent
-                const vat = (15 / 100) * totalRent; // 15% VAT
-                const tax = (5 / 100) * totalRent; // 5% Tax
-                const totalAmount = totalRent + vat - tax; // Final Total after adjustments
+<div class="header clearfix">
+    <div style="float: left;">
+    <pre>
+    <strong>Bill to:
+    ${company.name}
+    ${company.address}<pre>
+    </div>
 
-                const invoiceDate = document.getElementById('invoiceDate').value || formattedDate; // Use selected date or today's date
+    <div style="float: right;">
+    <pre>
+    Invoice Date: ${invoiceDate}
+    BIN Number: ${company.bin}
+    Invoice Number: ${company.invoice}<pre>
+    </div>
+</div>
 
-                const billWindow = window.open("", "_blank");
-                billWindow.document.write(`
-                    <html>
-                    <head>
-                        <title>Invoice</title>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                padding: 20px;
-                            }
-                            .header, .vehicle-details {
-                                margin-bottom: 20px;
-                            }
-                            table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-top: 20px;
-                            }
-                            table, th, td {
-                                border: 1px solid #ddd;
-                            }
-                            th, td {
-                                padding: 10px;
-                                text-align: left;
-                            }
-                            th {
-                                background-color: #f2f2f2;
-                            }
-                            .totals {
-                                margin-top: 20px;
-                                font-size: 16px;
-                            }
-                            .footer {
-                                margin-top: 30px;
-                                text-align: center;
-                            }
-                            .print-button {
-                                display: block;
-                                margin: 20px auto;
-                                padding: 10px 20px;
-                                background-color: #007BFF;
-                                color: #fff;
-                                border: none;
-                                border-radius: 5px;
-                                cursor: pointer;
-                                font-size: 16px;
-                            }
-                            .print-button:hover {
-                                background-color: #0056b3;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>Invoice</h1>
-                        <div class="header">
-                            <div style="float: left;">
-                                <p><strong>Bill to:</strong> ${company.name}</p>
-                                <p><strong>Address:</strong> ${company.address}</p>
-                            </div>
-                            <div style="float: right;">
-                                <p><strong>Invoice Date:</strong> ${invoiceDate}</p>
-                                <p><strong>BIN Number:</strong> ${company.bin}</p>
-                                <p><strong>Invoice Number:</strong> ${company.invoice}</p>
-                            </div>
-                            <div style="clear: both;"></div>
-                        </div>
-                        <h3>Vehicle rental bill for the month of October-2024</h3>
-                        <table>
-                            <tr>
-                                <th>Vehicle Type</th>
-                                <th>Brand</th>
-                                <th>Vehicle Number</th>
-                                <th>Driver Name</th>
-                                <th>Running Days</th>
-                                <th>Rent per Day</th>
-                                <th>Monthly Rent (Inc. TAX & VAT)</th>
-                            </tr>
-                            <tr>
-                                <td>${vehicle.vehicleType}</td>
-                                <td>${vehicle.brand}</td>
-                                <td>${vehicle.vehicleNumber}</td>
-                                <td>${vehicle.driverName}</td>
-                                <td>${vehicle.runningDays}</td>
-                                <td>${vehicle.rent}</td>
-                                <td>${totalRent}</td>
-                            </tr>
-                        </table>
-                        <div style="float: right;">
-                            <div class="totals">
-                                <p><strong>VAT (15%):</strong> ${vat.toFixed(2)}</p>
-                                <p><strong>Tax (5%):</strong> ${tax.toFixed(2)}</p>
-                                <p><strong>Total Amount to be Paid:</strong> ${totalAmount.toFixed(2)}</p>
-                            </div>
-                        </div>
-                        <div class="footer">
-                            <p contenteditable="true"><strong>In Words:</strong> Forty-Four Thousand Taka Only</p>
-                            <br><br><br>
-                            <div style="float: left;">
-                                <p contenteditable="true">Kind Regards!</p>
-                                <br><br>
-                                <p contenteditable="true">Md. Hamidul Islam<br>Manager of Sabbir Rent A Car</p>
-                            </div>
-                        </div>
-                        <div style="float: margin-bottom;">
-                            <button class="print-button" onclick="window.print()">Print Invoice</button>
-                        </div>
-                    </body>
-                    </html>
-                `);
-                billWindow.document.close();
-            }
+                <div style="clear: both;"></div>
+            </div>
+
+            <h3>Vehicle rental bill for the month of ${selectedMonthName} - ${selectedYear}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehicle Type</th>
+                        <th>Brand</th>
+                        <th>Vehicle Number</th>
+                        <th>Driver Name</th>
+                        <th>Running Days</th>
+                        <th>Rent per Day</th>
+                        <th>Monthly Rent (Inc. TAX & VAT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${vehicle.vehicleType}</td>
+                        <td>${vehicle.brand}</td>
+                        <td>${vehicle.vehicleNumber}</td>
+                        <td>${vehicle.driverName}</td>
+                        <td>${vehicle.runningDays}</td>
+                        <td>${vehicleRent.toFixed(2)}</td>
+                        <td>${(vat + txrv).toFixed(2)}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 20px;">
+                <table>
+                    <tr>
+                        <td class="full-width-row"><strong>VAT (15%):</strong></td>
+                        <td class="value-cell">${vat.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td class="full-width-row"><strong>Tax (5%):</strong></td>
+                        <td class="value-cell">${tax.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td class="full-width-row"><strong>Txrv:</strong></td>
+                        <td class="value-cell">${txrv.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td class="full-width-row"><strong>Total Amount to be Paid:</strong></td>
+                        <td class="value-cell">${totalAmount.toFixed(2)}</td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+           
+              <p style="text-align: center;"><strong>In Words:</strong> Forty-Four Thousand Taka Only</p>       
+            <div class="footer">
+            <div style="float: left;">
+              
+                <div>
+                    <p contenteditable="true">Kind Regards!</p>
+                    <br>
+                    <p contenteditable="true">Md. Hamidul Islam<br>Manager of Sabbir Rent A Car</p>
+                    </div>
+                </div>
+            </div>
+            <button class="print-button" onclick="window.print()">Print Invoice</button>
+
+        </body>
+        </html>
+    `);
+    billWindow.document.close();
+}
+
+
 
             // Initialize page
             window.onload = updateInvoiceDropdown;
